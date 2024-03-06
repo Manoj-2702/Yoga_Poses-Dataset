@@ -13,7 +13,7 @@ files = []
 for dirname, _, filenames in os.walk('TRAIN/'):
     for filename in filenames:
         files.append(os.path.join(dirname, filename))
-r.shuffle(files)
+# r.shuffle(files)
 
 
 # Initializing mediapipe pose class.
@@ -70,8 +70,39 @@ for img in os.listdir(path):
 
                 count +=1
 
-data.to_csv("dataset3.csv") # save the data as a csv file
+data.to_csv("Results/dataset3.csv") # save the data as a csv file
+#Input_Image
+sample_img  = cv2.imread(files[1])
+plt.figure(figsize = [10,10])
+plt.title("sample_Image");plt.axis('off');plt.imshow(sample_img[:,:,::-1]);plt.show()
+# Perform pose detection after converting the image into RGB format.
+results = pose.process(cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB))
 
+# Check if any landmarks are found.
+if results.pose_landmarks:
+    
+    # Iterate two times as we only want to display first two landmarks.
+    for i in range(2):
+        
+        # Display the found normalized landmarks.
+        print(f'{mp_pose.PoseLandmark(i).name}:\n{results.pose_landmarks.landmark[mp_pose.PoseLandmark(i).value]}') 
+
+# Create a copy of the sample image to draw landmarks on.
+img_copy = sample_img.copy()
+
+# Check if any landmarks are found.
+if results.pose_landmarks:
+    
+    # Draw Pose landmarks on the sample image.
+    mp_drawing.draw_landmarks(image=img_copy, landmark_list=results.pose_landmarks, connections=mp_pose.POSE_CONNECTIONS)
+       
+    # Specify a size of the figure.
+    fig = plt.figure(figsize = [10, 10])
+
+    # Display the output image with the landmarks drawn, also convert BGR to RGB for display. 
+    plt.title("Output");plt.axis('off');plt.imshow(img_copy[:,:,::-1]);plt.show()
+
+mp_drawing.plot_landmarks(results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
 
 def detectPose(image, pose, display=True):
     '''
@@ -212,4 +243,4 @@ for i in range(len(files)-1):
         r = angles_finder(landmarks)
         df = pd.concat([df,pd.DataFrame.from_records([{'Label':label,'left_elbow_angle':r[0],'right_elbow_angle':r[1],'left_shoulder_angle':r[2],'right_shoulder_angle':r[3],'left_knee_angle':r[4],'right_knee_angle':r[5]}])])
 print(df.head())
-df.to_csv("dataset4.csv")
+df.to_csv("Results/dataset4.csv")
