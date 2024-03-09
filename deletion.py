@@ -1,20 +1,6 @@
-import math
-import cv2
-import numpy as np
-from time import time
-import mediapipe as mp
-import matplotlib.pyplot as plt
-from IPython.display import HTML
-import pandas as pd
-
 import os
-import random as r
-files = []
-for dirname, _, filenames in os.walk('TRAIN/'):
-    for filename in filenames:
-        files.append(os.path.join(dirname, filename))
-# r.shuffle(files)
-
+import cv2
+import mediapipe as mp
 
 # Initializing mediapipe pose class.
 mp_pose = mp.solutions.pose
@@ -25,39 +11,38 @@ pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_
 # Initializing mediapipe drawing class, useful for annotation.
 mp_drawing = mp.solutions.drawing_utils 
 
-path='TRAIN/Vrukshasana/'
-data=[]
+# Path to the folder containing images
+folder_path = 'TRAIN/Vrukshasana/Images/'
 
-points = mp_pose.PoseLandmark
-#Input_Image
-sample_img  = cv2.imread(files[6])
-plt.figure(figsize = [10,10])
-plt.title("sample_Image");plt.axis('off');plt.imshow(sample_img[:,:,::-1]);plt.show()
-# Perform pose detection after converting the image into RGB format.
-results = pose.process(cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB))
+output_folder_path = 'TRAIN/Vrukshasana/Landmarks/'
 
-# Check if any landmarks are found.
-if results.pose_landmarks:
-    
-    # Iterate two times as we only want to display first two landmarks.
-    for i in range(2):
+if not os.path.exists(output_folder_path):
+    os.makedirs(output_folder_path)
+# Loop through all files in the folder
+for filename in os.listdir(folder_path):
+    # Check if the file is an image
+    if filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png'):
+        # Read the image
+        image_path = os.path.join(folder_path, filename)
+        sample_img = cv2.imread(image_path)
         
-        # Display the found normalized landmarks.
-        print(f'{mp_pose.PoseLandmark(i).name}:\n{results.pose_landmarks.landmark[mp_pose.PoseLandmark(i).value]}') 
+        # Perform pose detection after converting the image into RGB format.
+        results = pose.process(cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB))
+        
+        # Create a copy of the sample image to draw landmarks on.
+        img_copy = sample_img.copy()
 
-# Create a copy of the sample image to draw landmarks on.
-img_copy = sample_img.copy()
+        # Check if any landmarks are found.
+        if results.pose_landmarks:
+            # Draw Pose landmarks on the sample image.
+            mp_drawing.draw_landmarks(image=img_copy, landmark_list=results.pose_landmarks, connections=mp_pose.POSE_CONNECTIONS)
+            output_image_path = os.path.join(output_folder_path, filename)
+            cv2.imwrite(output_image_path, img_copy)
+            # Display the output image with the landmarks drawn, also convert BGR to RGB for display. 
+            # cv2.imshow('Output', img_copy)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+            
 
-# Check if any landmarks are found.
-if results.pose_landmarks:
-    
-    # Draw Pose landmarks on the sample image.
-    mp_drawing.draw_landmarks(image=img_copy, landmark_list=results.pose_landmarks, connections=mp_pose.POSE_CONNECTIONS)
-       
-    # Specify a size of the figure.
-    fig = plt.figure(figsize = [10, 10])
-
-    # Display the output image with the landmarks drawn, also convert BGR to RGB for display. 
-    plt.title("Output");plt.axis('off');plt.imshow(img_copy[:,:,::-1]);plt.show()
-
-mp_drawing.plot_landmarks(results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
+# Release mediapipe pose instance
+pose.close()

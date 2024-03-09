@@ -25,7 +25,7 @@ pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_
 # Initializing mediapipe drawing class, useful for annotation.
 mp_drawing = mp.solutions.drawing_utils 
 
-path='TRAIN/'
+path='TRAIN/Vrukshasana/'
 data=[]
 
 points = mp_pose.PoseLandmark
@@ -70,39 +70,7 @@ for img in os.listdir(path):
 
                 count +=1
 
-data.to_csv("Results/dataset3.csv") # save the data as a csv file
-#Input_Image
-sample_img  = cv2.imread(files[1])
-plt.figure(figsize = [10,10])
-plt.title("sample_Image");plt.axis('off');plt.imshow(sample_img[:,:,::-1]);plt.show()
-# Perform pose detection after converting the image into RGB format.
-results = pose.process(cv2.cvtColor(sample_img, cv2.COLOR_BGR2RGB))
-
-# Check if any landmarks are found.
-if results.pose_landmarks:
-    
-    # Iterate two times as we only want to display first two landmarks.
-    for i in range(2):
-        
-        # Display the found normalized landmarks.
-        print(f'{mp_pose.PoseLandmark(i).name}:\n{results.pose_landmarks.landmark[mp_pose.PoseLandmark(i).value]}') 
-
-# Create a copy of the sample image to draw landmarks on.
-img_copy = sample_img.copy()
-
-# Check if any landmarks are found.
-if results.pose_landmarks:
-    
-    # Draw Pose landmarks on the sample image.
-    mp_drawing.draw_landmarks(image=img_copy, landmark_list=results.pose_landmarks, connections=mp_pose.POSE_CONNECTIONS)
-       
-    # Specify a size of the figure.
-    fig = plt.figure(figsize = [10, 10])
-
-    # Display the output image with the landmarks drawn, also convert BGR to RGB for display. 
-    plt.title("Output");plt.axis('off');plt.imshow(img_copy[:,:,::-1]);plt.show()
-
-mp_drawing.plot_landmarks(results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
+data.to_csv("Results/Dataset_Vrukshasana.csv") # save the data as a csv file
 
 def detectPose(image, pose, display=True):
     '''
@@ -141,7 +109,7 @@ def detectPose(image, pose, display=True):
         
         # Iterate over the detected landmarks.
         for landmark in results.pose_landmarks.landmark:
-            # Append the landmark into the list.
+            # Append the landmark into the list. 
             landmarks.append((int(landmark.x * width), int(landmark.y * height),
                                   (landmark.z * width)))
     
@@ -227,20 +195,42 @@ def angles_finder(landmarks):
                                       landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                       landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value])
     
+    angle_for_ardhaChandrasana1 = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value],
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
+                                      landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value])
+    
+    angle_for_ardhaChandrasana2 = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value],
+                                      landmarks[mp_pose.PoseLandmark.LEFT_HIP.value],
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value])
+    
+    hand_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value],
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value])
+    
+    left_hip_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+                                    landmarks[mp_pose.PoseLandmark.LEFT_HIP.value],
+                                    landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value])
+    
+    right_hip_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+                                    landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
+                                    landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value])
     #----------------------------------------------------------------------------------------------------------------
-    return [left_elbow_angle,right_elbow_angle,left_shoulder_angle,right_shoulder_angle,left_knee_angle,right_knee_angle]
+    return [left_elbow_angle,right_elbow_angle,left_shoulder_angle,right_shoulder_angle,left_knee_angle,right_knee_angle,angle_for_ardhaChandrasana1,angle_for_ardhaChandrasana2,hand_angle,left_hip_angle,right_hip_angle]
 
 
 
-df = pd.DataFrame(columns = ['Label','left_elbow_angle','right_elbow_angle','left_shoulder_angle','right_shoulder_angle','left_knee_angle','right_knee_angle'])
+df = pd.DataFrame(columns = ['Label','left_elbow_angle','right_elbow_angle','left_shoulder_angle','right_shoulder_angle','left_knee_angle','right_knee_angle','angle_for_ardhaChandrasana1','angle_for_ardhaChandrasana2','hand_angle','left_hip_angle','right_hip_angle'])
 print(df)
 
-for i in range(len(files)-1):
-    image = cv2.imread(files[i])
-    label = files[i].split('/')[1]
-    output_image, landmarks = detectPose(image, pose, display=False)
-    if landmarks:
-        r = angles_finder(landmarks)
-        df = pd.concat([df,pd.DataFrame.from_records([{'Label':label,'left_elbow_angle':r[0],'right_elbow_angle':r[1],'left_shoulder_angle':r[2],'right_shoulder_angle':r[3],'left_knee_angle':r[4],'right_knee_angle':r[5]}])])
+for filename in os.listdir(path):
+    # Check if the file is an image
+    if filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.png'):
+        # Read the image
+        label = os.path.join(path, filename)
+        image = cv2.imread(label)
+        output_image, landmarks = detectPose(image, pose, display=False)
+        if landmarks:
+            r = angles_finder(landmarks)
+            df = pd.concat([df,pd.DataFrame.from_records([{'Label':label,'left_elbow_angle':r[0],'right_elbow_angle':r[1],'left_shoulder_angle':r[2],'right_shoulder_angle':r[3],'left_knee_angle':r[4],'right_knee_angle':r[5],'angle_for_ardhaChandrasana1':r[6],'angle_for_ardhaChandrasana2':r[7],'hand_angle':r[8],'left_hip_angle':r[9],'right_hip_angle':r[10]}])])
 print(df.head())
-df.to_csv("Results/dataset4.csv")
+df.to_csv("Results/Dataset_Vrukshasana_Angles.csv")
