@@ -12,7 +12,7 @@ pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_
 mp_drawing = mp.solutions.drawing_utils 
 
 # Path to the folder containing images
-folder_path = 'Veerabhadrasana/'
+folder_path = 'TRAIN/BaddhaKonasana/'
 
 # Loop through all files in the folder
 for filename in os.listdir(folder_path):

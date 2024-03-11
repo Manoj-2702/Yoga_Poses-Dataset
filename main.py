@@ -9,11 +9,6 @@ import pandas as pd
 
 import os
 import random as r
-files = []
-for dirname, _, filenames in os.walk('TRAIN/'):
-    for filename in filenames:
-        files.append(os.path.join(dirname, filename))
-# r.shuffle(files)
 
 
 # Initializing mediapipe pose class.
@@ -25,7 +20,7 @@ pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, model_
 # Initializing mediapipe drawing class, useful for annotation.
 mp_drawing = mp.solutions.drawing_utils 
 
-path='TRAIN/Vrukshasana/'
+path='TRAIN/Vrukshasana/Images/'
 data=[]
 
 points = mp_pose.PoseLandmark
@@ -214,12 +209,25 @@ def angles_finder(landmarks):
     right_hip_angle = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                     landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
                                     landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value])
+    
+    neck_angle_uk = calculateAngle(landmarks[mp_pose.PoseLandmark.NOSE.value],
+                                landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+                                landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
+    
+    left_wrist_angle_bk = calculateAngle(landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value],
+                                      landmarks[mp_pose.PoseLandmark.LEFT_HIP.value],
+                                      landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value])
+    
+    # Get the angle between the right wrist, hip, and ankle points
+    right_wrist_angle_bk = calculateAngle(landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value],
+                                       landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value],
+                                       landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value])
     #----------------------------------------------------------------------------------------------------------------
-    return [left_elbow_angle,right_elbow_angle,left_shoulder_angle,right_shoulder_angle,left_knee_angle,right_knee_angle,angle_for_ardhaChandrasana1,angle_for_ardhaChandrasana2,hand_angle,left_hip_angle,right_hip_angle]
+    return [left_elbow_angle,right_elbow_angle,left_shoulder_angle,right_shoulder_angle,left_knee_angle,right_knee_angle,angle_for_ardhaChandrasana1,angle_for_ardhaChandrasana2,hand_angle,left_hip_angle,right_hip_angle,neck_angle_uk,left_wrist_angle_bk,right_wrist_angle_bk]
 
 
 
-df = pd.DataFrame(columns = ['Label','left_elbow_angle','right_elbow_angle','left_shoulder_angle','right_shoulder_angle','left_knee_angle','right_knee_angle','angle_for_ardhaChandrasana1','angle_for_ardhaChandrasana2','hand_angle','left_hip_angle','right_hip_angle'])
+df = pd.DataFrame(columns = ['Label','left_elbow_angle','right_elbow_angle','left_shoulder_angle','right_shoulder_angle','left_knee_angle','right_knee_angle','angle_for_ardhaChandrasana1','angle_for_ardhaChandrasana2','hand_angle','left_hip_angle','right_hip_angle','neck_angle_uk','left_wrist_angle_bk','right_wrist_angle_bk'])
 print(df)
 
 for filename in os.listdir(path):
@@ -231,6 +239,6 @@ for filename in os.listdir(path):
         output_image, landmarks = detectPose(image, pose, display=False)
         if landmarks:
             r = angles_finder(landmarks)
-            df = pd.concat([df,pd.DataFrame.from_records([{'Label':label,'left_elbow_angle':r[0],'right_elbow_angle':r[1],'left_shoulder_angle':r[2],'right_shoulder_angle':r[3],'left_knee_angle':r[4],'right_knee_angle':r[5],'angle_for_ardhaChandrasana1':r[6],'angle_for_ardhaChandrasana2':r[7],'hand_angle':r[8],'left_hip_angle':r[9],'right_hip_angle':r[10]}])])
+            df = pd.concat([df,pd.DataFrame.from_records([{'Label':label,'left_elbow_angle':r[0],'right_elbow_angle':r[1],'left_shoulder_angle':r[2],'right_shoulder_angle':r[3],'left_knee_angle':r[4],'right_knee_angle':r[5],'angle_for_ardhaChandrasana1':r[6],'angle_for_ardhaChandrasana2':r[7],'hand_angle':r[8],'left_hip_angle':r[9],'right_hip_angle':r[10],'neck_angle_uk':r[11],'left_wrist_angle_bk':r[12],'right_wrist_angle_bk':r[13]}])])
 print(df.head())
 df.to_csv("Results/Dataset_Vrukshasana_Angles.csv")
