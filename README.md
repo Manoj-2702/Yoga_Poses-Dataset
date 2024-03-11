@@ -1,4 +1,5 @@
-# TDL-Dataset
+# Yoga-Poses-Dataset
+This project was done as a part of the data collection project of Topics in Deep Learning(TDL).
 
 The Yoga-Pose Dataset is a comprehensive collection of yoga pose images, pose landmarks, and calculated angles for various yoga poses. This dataset serves as a valuable resource for researchers, practitioners, and developers interested in yoga pose detection, recognition, and analysis. Each yoga pose in the dataset is meticulously annotated with pose landmarks and corresponding angles, providing rich ground truth data for machine learning model training and evaluation.
 
@@ -43,6 +44,15 @@ The dataset covers a wide range of yoga poses, including:
 6. <b>Vrukshasana</b>
 
 ![v59](https://github.com/Manoj-2702/TDL-Dataset/assets/103581128/4fd8b74d-4668-4e06-b9c8-8ac6179742c3)
+
+7. <b>BaddhaKonasana</b>
+
+![BK_6](https://github.com/Manoj-2702/TDL-Dataset/assets/103581128/44a2f19a-2bc2-4458-8aa4-03c420a9154e)
+
+8. <b>UtkataKonasana</b>
+
+![UK_5](https://github.com/Manoj-2702/TDL-Dataset/assets/103581128/52484a06-559f-4d4d-a4b3-eaa949782729)
+
 
 ### Calculated Angles
 
